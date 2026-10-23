@@ -8,6 +8,7 @@ import sleekux_backend.core.model.ParameterType;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.PatternSyntaxException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -121,10 +122,10 @@ public class RegexMatchTransformationTest {
         assertEquals("", regexMatchTransformation.apply("abc", params("\\d+", false, ", ")));
     }
 
-    // Returns the input unchanged when the pattern is invalid
+    // Throws an exception when the pattern is invalid
     @Test
-    void returnsInputForInvalidPattern() {
-        assertEquals("abc(", regexMatchTransformation.apply("abc(", pattern("(")));
+    void throwsForInvalidPattern() {
+        assertThrows(PatternSyntaxException.class, () -> regexMatchTransformation.apply("abc(", pattern("(")));
     }
 
     // Returns the input unchanged when the pattern is missing, null, empty or the map is null

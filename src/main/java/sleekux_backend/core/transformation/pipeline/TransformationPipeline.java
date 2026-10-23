@@ -28,6 +28,9 @@ public class TransformationPipeline {
 
         for(int i = 0; i < steps.size(); i++) {
             PipelineStep step = steps.get(i);
+            if(step == null) {
+                throw new IllegalArgumentException("Step " + (i + 1) + " is null");
+            }
             Transformation transformation = registry.get(step.getTransformationKey());
 
             if(transformation == null) {

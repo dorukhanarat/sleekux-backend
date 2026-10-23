@@ -185,6 +185,22 @@ public class TransformationPipelineTest {
         assertEquals(List.of("x"), recorder.inputs);
     }
 
+    // A null step throws an exception naming its position, and later steps do not run
+    @Test
+    void nullStepThrows() {
+        RecordingTransformation recorder = new RecordingTransformation();
+        List<PipelineStep> steps = Arrays.asList(
+                new PipelineStep("record", null),
+                null,
+                new PipelineStep("record", null)
+        );
+
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> pipelineWith(recorder).execute("x", steps));
+
+        assertEquals("Step 2 is null", e.getMessage());
+        assertEquals(List.of("x"), recorder.inputs);
+    }
+
     // Null input is passed to the first step as an empty string
     @Test
     void nullInputIsPassedAsEmptyString() {
