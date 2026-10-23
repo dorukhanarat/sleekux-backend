@@ -1,7 +1,6 @@
-package sleekux_backend.core.transformation;
+package sleekux_backend.core.transformation.impl;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import sleekux_backend.core.model.ParameterDefinition;
 import sleekux_backend.core.model.ParameterType;
@@ -28,15 +27,15 @@ public class ReplaceTransformationTest {
         return params;
     }
 
+    // Has key "replace" and display name "Replace Text"
     @Test
-    @DisplayName("Has key \"replace\" and display name \"Replace Text\"")
     void hasExpectedKeyAndDisplayName() {
         assertEquals("replace", replaceTransformation.getKey());
         assertEquals("Replace Text", replaceTransformation.getDisplayName());
     }
 
+    // Defines a required oldValue and an optional newValue text parameter
     @Test
-    @DisplayName("Defines a required oldValue and an optional newValue text parameter")
     void definesOldValueAndNewValueParameters() {
         List<ParameterDefinition> parameters = replaceTransformation.getParameters();
 
@@ -54,39 +53,39 @@ public class ReplaceTransformationTest {
         assertFalse(newValue.isRequired());
     }
 
+    // Replaces a single occurrence
     @Test
-    @DisplayName("Replaces a single occurrence")
     void replacesSingleOccurrence() {
         assertEquals("Hello Java", replaceTransformation.apply("Hello World", params("World", "Java")));
     }
 
+    // Replaces every occurrence
     @Test
-    @DisplayName("Replaces every occurrence")
     void replacesAllOccurrences() {
         assertEquals("a+b+c", replaceTransformation.apply("a-b-c", params("-", "+")));
     }
 
+    // Returns the input unchanged when there is no match
     @Test
-    @DisplayName("Returns the input unchanged when there is no match")
     void returnsInputUnchangedWhenNoMatch() {
         assertEquals("Hello World", replaceTransformation.apply("Hello World", params("xyz", "abc")));
     }
 
+    // Matching is case-sensitive
     @Test
-    @DisplayName("Matching is case-sensitive")
     void isCaseSensitive() {
         assertEquals("Hello", replaceTransformation.apply("Hello", params("hello", "bye")));
     }
 
+    // Regex special characters are matched literally
     @Test
-    @DisplayName("Regex special characters are matched literally")
     void treatsOldValueLiterally() {
         assertEquals("a-b-c", replaceTransformation.apply("a.b.c", params(".", "-")));
         assertEquals("1-1", replaceTransformation.apply("1+1", params("+", "-")));
     }
 
+    // Removes matches when newValue is missing
     @Test
-    @DisplayName("Removes matches when newValue is missing")
     void removesMatchesWhenNewValueIsMissing() {
         Map<String, Object> params = new HashMap<>();
         params.put("oldValue", "l");
@@ -94,14 +93,14 @@ public class ReplaceTransformationTest {
         assertEquals("Heo Word", replaceTransformation.apply("Hello World", params));
     }
 
+    // Removes matches when newValue is null
     @Test
-    @DisplayName("Removes matches when newValue is null")
     void removesMatchesWhenNewValueIsNull() {
         assertEquals("Heo Word", replaceTransformation.apply("Hello World", params("l", null)));
     }
 
+    // Returns the input unchanged when oldValue is missing
     @Test
-    @DisplayName("Returns the input unchanged when oldValue is missing")
     void returnsInputUnchangedWhenOldValueIsMissing() {
         Map<String, Object> params = new HashMap<>();
         params.put("newValue", "x");
@@ -109,45 +108,45 @@ public class ReplaceTransformationTest {
         assertEquals("Hello", replaceTransformation.apply("Hello", params));
     }
 
+    // Returns the input unchanged when oldValue is null
     @Test
-    @DisplayName("Returns the input unchanged when oldValue is null")
     void returnsInputUnchangedWhenOldValueIsNull() {
         assertEquals("Hello", replaceTransformation.apply("Hello", params(null, "x")));
     }
 
+    // Returns the input unchanged when oldValue is empty
     @Test
-    @DisplayName("Returns the input unchanged when oldValue is empty")
     void returnsInputUnchangedWhenOldValueIsEmpty() {
         assertEquals("Hello", replaceTransformation.apply("Hello", params("", "x")));
     }
 
+    // Returns the input unchanged when the parameter map is null or empty
     @Test
-    @DisplayName("Returns the input unchanged when the parameter map is null or empty")
     void returnsInputUnchangedWhenParametersAreNullOrEmpty() {
         assertEquals("Hello", replaceTransformation.apply("Hello", null));
         assertEquals("Hello", replaceTransformation.apply("Hello", new HashMap<>()));
     }
 
+    // Returns an empty string for null input
     @Test
-    @DisplayName("Returns an empty string for null input")
     void returnsEmptyStringForNullInput() {
         assertEquals("", replaceTransformation.apply(null, params("a", "b")));
     }
 
+    // Returns an empty string for empty input
     @Test
-    @DisplayName("Returns an empty string for empty input")
     void returnsEmptyStringForEmptyInput() {
         assertEquals("", replaceTransformation.apply("", params("a", "b")));
     }
 
+    // Converts non-string parameter values to text
     @Test
-    @DisplayName("Converts non-string parameter values to text")
     void convertsNonStringParametersToString() {
         assertEquals("202", replaceTransformation.apply("101", params(1, 2)));
     }
 
+    // Replaces non-overlapping matches from left to right
     @Test
-    @DisplayName("Replaces non-overlapping matches from left to right")
     void replacesNonOverlappingMatchesFromLeft() {
         assertEquals("ba", replaceTransformation.apply("aaa", params("aa", "b")));
     }

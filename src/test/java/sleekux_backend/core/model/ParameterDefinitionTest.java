@@ -1,6 +1,5 @@
 package sleekux_backend.core.model;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -11,8 +10,8 @@ public class ParameterDefinitionTest {
         return new ParameterDefinition("oldValue", "Target String", ParameterType.TEXT, true, "", "Text to replace");
     }
 
+    // Getters return the values passed to the constructor
     @Test
-    @DisplayName("Getters return the values passed to the constructor")
     void gettersReturnConstructorValues() {
         ParameterDefinition definition = new ParameterDefinition("count", "Count", ParameterType.NUMBER, false, 5, "Enter a number");
 
@@ -24,8 +23,8 @@ public class ParameterDefinitionTest {
         assertEquals("Enter a number", definition.getPlaceholder());
     }
 
+    // Allows null default value and placeholder
     @Test
-    @DisplayName("Allows null default value and placeholder")
     void allowsNullDefaultValueAndPlaceholder() {
         ParameterDefinition definition = new ParameterDefinition("flag", "Flag", ParameterType.BOOLEAN, false, null, null);
 
@@ -33,16 +32,16 @@ public class ParameterDefinitionTest {
         assertNull(definition.getPlaceholder());
     }
 
+    // Is equal to itself
     @Test
-    @DisplayName("Is equal to itself")
     void equalsItself() {
         ParameterDefinition definition = create();
 
         assertEquals(definition, definition);
     }
 
+    // Definitions with the same fields are equal and have the same hash code
     @Test
-    @DisplayName("Definitions with the same fields are equal and have the same hash code")
     void equalsWhenAllFieldsMatch() {
         ParameterDefinition first = create();
         ParameterDefinition second = create();
@@ -52,40 +51,40 @@ public class ParameterDefinitionTest {
         assertEquals(first.hashCode(), second.hashCode());
     }
 
+    // Definitions with different names are not equal
     @Test
-    @DisplayName("Definitions with different names are not equal")
     void notEqualWhenNameDiffers() {
         ParameterDefinition other = new ParameterDefinition("other", "Target String", ParameterType.TEXT, true, "", "Text to replace");
 
         assertNotEquals(create(), other);
     }
 
+    // Definitions with different labels are not equal
     @Test
-    @DisplayName("Definitions with different labels are not equal")
     void notEqualWhenLabelDiffers() {
         ParameterDefinition other = new ParameterDefinition("oldValue", "Other Label", ParameterType.TEXT, true, "", "Text to replace");
 
         assertNotEquals(create(), other);
     }
 
+    // Definitions with different types are not equal
     @Test
-    @DisplayName("Definitions with different types are not equal")
     void notEqualWhenTypeDiffers() {
         ParameterDefinition other = new ParameterDefinition("oldValue", "Target String", ParameterType.REGEX, true, "", "Text to replace");
 
         assertNotEquals(create(), other);
     }
 
+    // Definitions with different required flags are not equal
     @Test
-    @DisplayName("Definitions with different required flags are not equal")
     void notEqualWhenRequiredDiffers() {
         ParameterDefinition other = new ParameterDefinition("oldValue", "Target String", ParameterType.TEXT, false, "", "Text to replace");
 
         assertNotEquals(create(), other);
     }
 
+    // Is not equal to null or to an object of another type
     @Test
-    @DisplayName("Is not equal to null or to an object of another type")
     void notEqualToNullOrOtherType() {
         ParameterDefinition definition = create();
 
@@ -93,8 +92,8 @@ public class ParameterDefinitionTest {
         assertNotEquals("oldValue", definition);
     }
 
+    // Default value and placeholder are not part of equality
     @Test
-    @DisplayName("Default value and placeholder are not part of equality")
     void equalityIgnoresDefaultValueAndPlaceholder() {
         ParameterDefinition other = new ParameterDefinition("oldValue", "Target String", ParameterType.TEXT, true, "something", "Different placeholder");
 
@@ -102,8 +101,8 @@ public class ParameterDefinitionTest {
         assertEquals(create().hashCode(), other.hashCode());
     }
 
+    // toString includes name, label, type and required flag
     @Test
-    @DisplayName("toString includes name, label, type and required flag")
     void toStringContainsIdentifyingFields() {
         String text = create().toString();
 

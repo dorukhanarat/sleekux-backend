@@ -53,7 +53,14 @@ public abstract class AbstractTransformation implements Transformation {
         if(params == null || !params.containsKey(name) || params.get(name) == null) {
             return defaultValue;
         }
-        return Boolean.parseBoolean(String.valueOf(params.get(name)).trim());
+        String value = String.valueOf(params.get(name)).trim();
+        if(value.equalsIgnoreCase("true")) {
+            return true;
+        }
+        if(value.equalsIgnoreCase("false")) {
+            return false;
+        }
+        return defaultValue;
     }
 
 }
