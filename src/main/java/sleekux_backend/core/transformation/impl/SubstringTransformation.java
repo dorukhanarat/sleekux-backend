@@ -20,7 +20,7 @@ public class SubstringTransformation extends AbstractTransformation {
                                 ParameterType.NUMBER,
                                 true,
                                 0,
-                                "Start Position (0 based)"
+                                "Index of the first character to keep, 0 is the start"
                         ),
                         new ParameterDefinition(
                                 "endIndex",
@@ -28,7 +28,7 @@ public class SubstringTransformation extends AbstractTransformation {
                                 ParameterType.NUMBER,
                                 false,
                                 -1,
-                                "End Position (-1 for end of text)"
+                                "Index to stop before, -1 keeps everything to the end"
                         )
                 )
         );

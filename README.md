@@ -52,7 +52,7 @@ Lists every available transformation and its parameters. A frontend can use this
         "type": "text",
         "required": true,
         "defaultValue": "",
-        "placeholder": "Text to replace"
+        "placeholder": "Exact text to find, e.g. world"
       },
       {
         "name": "newValue",
@@ -60,7 +60,7 @@ Lists every available transformation and its parameters. A frontend can use this
         "type": "text",
         "required": false,
         "defaultValue": "",
-        "placeholder": "New Text"
+        "placeholder": "Text to put in its place, leave empty to delete"
       }
     ]
   },
@@ -166,6 +166,20 @@ Errors return a JSON body in this format:
 | `uppercase` | To Uppercase | – | |
 | `lowercase` | To Lowercase | – | |
 | `trim` | Trim Whitespace | `mode` (text, default `both`) | `start`, `end` or `both` (ignores upper/lower case). Unknown values trim both ends. |
+| `regex_replace` | Regex Replace | `pattern` (regex, required), `replacement` (text, default `""`), `caseInsensitive` (boolean, default `false`) | Replaces every match. Use `$1`, `$2`, … in the replacement to insert groups. An empty `pattern` leaves the text unchanged. An invalid pattern or a reference to a missing group returns `400`. |
+| `case_convert` | Change Case | `style` (text, default `title`) | `title`, `sentence`, `camel`, `pascal`, `snake`, `kebab` or `constant`. Words are split on spaces, `_`, `-` and camelCase humps (`parseHTMLText` → `parse_html_text`). `title` and `sentence` keep the original spacing. Unknown values use `title`. |
+| `reverse` | Reverse Text | `mode` (text, default `chars`) | `chars`, `words` or `lines`. Emoji stay intact. `words` joins the words with single spaces. Unknown values reverse characters. |
+| `pad` | Pad Text | `length` (number, required), `padChar` (text, default `" "`), `side` (text, default `start`) | Pads to at least `length` characters (max 10000). Only the first character of `padChar` is used. `side` is `start`, `end` or `both`; with `both` the extra character goes to the end. Longer text is left unchanged. |
+| `repeat` | Repeat Text | `count` (number, default `2`), `separator` (text, default `""`) | `count` is limited to 0–1000. A count of `0` returns `""`. |
+| `normalize_whitespace` | Normalize Whitespace | `mode` (text, default `collapse`) | `collapse` turns whitespace runs into one space and trims the ends, `all` removes every whitespace character, `blank_lines` removes empty lines. Unknown values collapse. |
+| `sort_lines` | Sort Lines | `order` (text, default `asc`), `caseSensitive` (boolean, default `true`), `numeric` (boolean, default `false`) | `order` is `asc` or `desc`. With `numeric`, lines are compared by value and lines that are not numbers come after the numbers. |
+| `dedupe_lines` | Remove Duplicate Lines | `caseSensitive` (boolean, default `true`), `trimLines` (boolean, default `false`) | Keeps the first occurrence of each line, in its original form and order. `trimLines` ignores leading/trailing whitespace when comparing. |
+| `filter_lines` | Filter Lines | `pattern` (regex, required), `invert` (boolean, default `false`) | Keeps lines that contain a match, or removes them when `invert` is `true`. An empty `pattern` leaves the text unchanged. An invalid pattern returns `400`. |
+| `number_lines` | Number Lines | `start` (number, default `1`), `separator` (text, default `". "`) | Every line is numbered, including empty ones. |
+| `split_join` | Split & Join | `splitBy` (text, default `","`), `joinWith` (text, default newline), `trimItems` (boolean, default `true`) | Splits on `splitBy` (matched literally) and joins the items with `joinWith`, e.g. turns `a, b, c` into one item per line. Empty items are kept. An empty `splitBy` leaves the text unchanged. |
+| `wrap_lines` | Wrap Each Line | `prefix` (text, default `""`), `suffix` (text, default `""`) | Adds the prefix and suffix to every line, e.g. `'` and `',` to quote values. |
+
+Line-based transformations (`reverse` with `lines`, `normalize_whitespace` with `blank_lines`, `sort_lines`, `dedupe_lines`, `filter_lines`, `number_lines`, `wrap_lines`) accept `\n`, `\r\n` and `\r` line endings and always return `\n`.
 
 Parameter values can be sent as JSON strings, numbers or booleans. For example, `"startIndex": 2` and `"startIndex": "2"` both work. A value that cannot be read (such as `"abc"` for a number) falls back to its default.
 

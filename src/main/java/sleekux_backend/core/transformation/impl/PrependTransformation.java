@@ -20,7 +20,7 @@ public class PrependTransformation extends AbstractTransformation {
                                 ParameterType.TEXT,
                                 true,
                                 "",
-                                "Text to prepend"
+                                "Text added to the start, e.g. https://"
                         )
                 )
         );

@@ -20,7 +20,7 @@ public class AppendTransformation extends AbstractTransformation {
                                 ParameterType.TEXT,
                                 true,
                                 "",
-                                "Text to append"
+                                "Text added to the end, e.g. .txt"
                         )
                 )
         );

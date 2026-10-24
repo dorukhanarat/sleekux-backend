@@ -38,7 +38,9 @@ public class TransformationRegistryTest {
     void defaultRegistryContainsBuiltIns() {
         List<String> keys = registry.getAllAsList().stream().map(Transformation::getKey).toList();
 
-        assertEquals(List.of("replace", "append", "prepend", "substring", "regex_match", "uppercase", "lowercase", "trim"), keys);
+        assertEquals(List.of("replace", "append", "prepend", "substring", "regex_match", "uppercase", "lowercase", "trim",
+                "regex_replace", "case_convert", "reverse", "pad", "repeat", "normalize_whitespace",
+                "sort_lines", "dedupe_lines", "filter_lines", "number_lines", "split_join", "wrap_lines"), keys);
     }
 
     // get returns the transformation registered under the key
@@ -81,7 +83,7 @@ public class TransformationRegistryTest {
         registry.register(replacement);
 
         assertSame(replacement, registry.get("replace"));
-        assertEquals(8, registry.getAll().size());
+        assertEquals(20, registry.getAll().size());
     }
 
     // Registering a null transformation or one with a null key is ignored
@@ -90,7 +92,7 @@ public class TransformationRegistryTest {
         registry.register(null);
         registry.register(new StubTransformation(null));
 
-        assertEquals(8, registry.getAll().size());
+        assertEquals(20, registry.getAll().size());
     }
 
     // A registry built from a list contains only those transformations
@@ -127,7 +129,7 @@ public class TransformationRegistryTest {
 
         registry.register(new StubTransformation("later"));
 
-        assertEquals(9, all.size());
+        assertEquals(21, all.size());
     }
 
     // getAllAsList returns an immutable snapshot
@@ -137,7 +139,7 @@ public class TransformationRegistryTest {
 
         registry.register(new StubTransformation("later"));
 
-        assertEquals(8, list.size());
+        assertEquals(20, list.size());
         assertThrows(UnsupportedOperationException.class, () -> list.add(new StubTransformation("x")));
     }
 }

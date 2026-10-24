@@ -21,7 +21,7 @@ public class TrimTransformation extends AbstractTransformation {
                                 ParameterType.TEXT,
                                 false,
                                 "both",
-                                "start, end or both"
+                                "Where to trim: start, end or both"
                         )
                 )
         );

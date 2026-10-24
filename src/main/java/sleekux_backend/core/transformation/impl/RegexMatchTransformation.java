@@ -24,7 +24,7 @@ public class RegexMatchTransformation extends AbstractTransformation {
                                 ParameterType.REGEX,
                                 true,
                                 "",
-                                "Regex Patterm"
+                                "e.g. \\d+ finds every number"
                         ),
                         new ParameterDefinition(
                                 "matchAll",
@@ -32,7 +32,7 @@ public class RegexMatchTransformation extends AbstractTransformation {
                                 ParameterType.BOOLEAN,
                                 false,
                                 true,
-                                "Get all matches"
+                                "Turn off to return only the first match"
                         ),
                         new ParameterDefinition(
                                 "delimiter",
@@ -40,7 +40,7 @@ public class RegexMatchTransformation extends AbstractTransformation {
                                 ParameterType.TEXT,
                                 false,
                                 ", ",
-                                "Delimiter seperation character or text"
+                                "Text placed between matches, default is a comma and a space"
                         )
                 )
         );

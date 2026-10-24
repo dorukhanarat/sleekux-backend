@@ -17,7 +17,19 @@ public class TransformationRegistry {
                 new RegexMatchTransformation(),
                 new UppercaseTransformation(),
                 new LowercaseTransformation(),
-                new TrimTransformation()
+                new TrimTransformation(),
+                new RegexReplaceTransformation(),
+                new CaseConvertTransformation(),
+                new ReverseTransformation(),
+                new PadTransformation(),
+                new RepeatTransformation(),
+                new NormalizeWhitespaceTransformation(),
+                new SortLinesTransformation(),
+                new DedupeLinesTransformation(),
+                new FilterLinesTransformation(),
+                new NumberLinesTransformation(),
+                new SplitJoinTransformation(),
+                new WrapLinesTransformation()
         ));
     }
 

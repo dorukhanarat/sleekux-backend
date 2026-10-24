@@ -20,7 +20,7 @@ public class ReplaceTransformation extends AbstractTransformation {
                                 ParameterType.TEXT,
                                 true,
                                 "",
-                                "Text to replace"
+                                "Exact text to find, e.g. world"
                         ),
                         new ParameterDefinition(
                                 "newValue",
@@ -28,7 +28,7 @@ public class ReplaceTransformation extends AbstractTransformation {
                                 ParameterType.TEXT,
                                 false,
                                 "",
-                                "New Text"
+                                "Text to put in its place, leave empty to delete"
                         )
                 )
         );

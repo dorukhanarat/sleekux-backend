@@ -20,7 +20,7 @@ public class CoreConfigTest {
     void providesDefaultRegistry() {
         TransformationRegistry registry = new CoreConfig().transformationRegistry();
 
-        assertEquals(8, registry.getAll().size());
+        assertEquals(20, registry.getAll().size());
     }
 
     // The pipeline bean uses the registry bean from the same context

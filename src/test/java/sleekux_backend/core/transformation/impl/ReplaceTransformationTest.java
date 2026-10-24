@@ -45,7 +45,7 @@ public class ReplaceTransformationTest {
         assertEquals("oldValue", oldValue.getName());
         assertEquals(ParameterType.TEXT, oldValue.getType());
         assertTrue(oldValue.isRequired());
-        assertEquals("Text to replace", oldValue.getPlaceholder());
+        assertEquals("Exact text to find, e.g. world", oldValue.getPlaceholder());
 
         ParameterDefinition newValue = parameters.get(1);
         assertEquals("newValue", newValue.getName());

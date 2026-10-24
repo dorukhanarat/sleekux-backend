@@ -37,8 +37,10 @@ public class TransformationControllerTest {
     void listsAllTransformations() throws Exception {
         mockMvc.perform(get(TRANSFORMATIONS_URL))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(8)))
-                .andExpect(jsonPath("$[*].key", contains("replace", "append", "prepend", "substring", "regex_match", "uppercase", "lowercase", "trim")));
+                .andExpect(jsonPath("$", hasSize(20)))
+                .andExpect(jsonPath("$[*].key", contains("replace", "append", "prepend", "substring", "regex_match", "uppercase", "lowercase", "trim",
+                        "regex_replace", "case_convert", "reverse", "pad", "repeat", "normalize_whitespace",
+                        "sort_lines", "dedupe_lines", "filter_lines", "number_lines", "split_join", "wrap_lines")));
     }
 
     // Each transformation includes its display name and parameter definitions
@@ -50,7 +52,7 @@ public class TransformationControllerTest {
                 .andExpect(jsonPath("$[0].parameters[0].name").value("oldValue"))
                 .andExpect(jsonPath("$[0].parameters[0].label").value("Target String"))
                 .andExpect(jsonPath("$[0].parameters[0].required").value(true))
-                .andExpect(jsonPath("$[0].parameters[0].placeholder").value("Text to replace"))
+                .andExpect(jsonPath("$[0].parameters[0].placeholder").value("Exact text to find, e.g. world"))
                 .andExpect(jsonPath("$[5].parameters", empty()));
     }
 
