@@ -200,7 +200,7 @@ src/main/java/sleekux_backend/
     └── dto/                      Request and response objects
 ```
 
-To add a new transformation, create a class in `core/transformation/impl/` that extends `AbstractTransformation`, then add it to the default list in `TransformationRegistry`.
+To add a new transformation, create a class in `core/transformation/impl/` that extends `AbstractTransformation`, then add it to the default list in `TransformationRegistry`. Keep that list in alphabetical order, because `GET /api/transformations` returns transformations in that order.
 
 ## Running Tests
 

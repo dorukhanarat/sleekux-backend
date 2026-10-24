@@ -10,25 +10,25 @@ public class TransformationRegistry {
 
     public TransformationRegistry() {
         this(List.of(
-                new ReplaceTransformation(),
                 new AppendTransformation(),
-                new PrependTransformation(),
-                new SubstringTransformation(),
-                new RegexMatchTransformation(),
-                new UppercaseTransformation(),
-                new LowercaseTransformation(),
-                new TrimTransformation(),
-                new RegexReplaceTransformation(),
                 new CaseConvertTransformation(),
-                new ReverseTransformation(),
-                new PadTransformation(),
-                new RepeatTransformation(),
-                new NormalizeWhitespaceTransformation(),
-                new SortLinesTransformation(),
                 new DedupeLinesTransformation(),
                 new FilterLinesTransformation(),
+                new LowercaseTransformation(),
+                new NormalizeWhitespaceTransformation(),
                 new NumberLinesTransformation(),
+                new PadTransformation(),
+                new PrependTransformation(),
+                new RegexMatchTransformation(),
+                new RegexReplaceTransformation(),
+                new RepeatTransformation(),
+                new ReplaceTransformation(),
+                new ReverseTransformation(),
+                new SortLinesTransformation(),
                 new SplitJoinTransformation(),
+                new SubstringTransformation(),
+                new TrimTransformation(),
+                new UppercaseTransformation(),
                 new WrapLinesTransformation()
         ));
     }

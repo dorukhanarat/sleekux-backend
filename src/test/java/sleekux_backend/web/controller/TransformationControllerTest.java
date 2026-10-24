@@ -38,32 +38,32 @@ public class TransformationControllerTest {
         mockMvc.perform(get(TRANSFORMATIONS_URL))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(20)))
-                .andExpect(jsonPath("$[*].key", contains("replace", "append", "prepend", "substring", "regex_match", "uppercase", "lowercase", "trim",
-                        "regex_replace", "case_convert", "reverse", "pad", "repeat", "normalize_whitespace",
-                        "sort_lines", "dedupe_lines", "filter_lines", "number_lines", "split_join", "wrap_lines")));
+                .andExpect(jsonPath("$[*].key", contains("append", "case_convert", "dedupe_lines", "filter_lines", "lowercase",
+                        "normalize_whitespace", "number_lines", "pad", "prepend", "regex_match", "regex_replace", "repeat",
+                        "replace", "reverse", "sort_lines", "split_join", "substring", "trim", "uppercase", "wrap_lines")));
     }
 
     // Each transformation includes its display name and parameter definitions
     @Test
     void transformationsIncludeParameterDefinitions() throws Exception {
         mockMvc.perform(get(TRANSFORMATIONS_URL))
-                .andExpect(jsonPath("$[0].displayName").value("Replace Text"))
-                .andExpect(jsonPath("$[0].parameters", hasSize(2)))
-                .andExpect(jsonPath("$[0].parameters[0].name").value("oldValue"))
-                .andExpect(jsonPath("$[0].parameters[0].label").value("Target String"))
-                .andExpect(jsonPath("$[0].parameters[0].required").value(true))
-                .andExpect(jsonPath("$[0].parameters[0].placeholder").value("Exact text to find, e.g. world"))
-                .andExpect(jsonPath("$[5].parameters", empty()));
+                .andExpect(jsonPath("$[12].displayName").value("Replace Text"))
+                .andExpect(jsonPath("$[12].parameters", hasSize(2)))
+                .andExpect(jsonPath("$[12].parameters[0].name").value("oldValue"))
+                .andExpect(jsonPath("$[12].parameters[0].label").value("Target String"))
+                .andExpect(jsonPath("$[12].parameters[0].required").value(true))
+                .andExpect(jsonPath("$[12].parameters[0].placeholder").value("Exact text to find, e.g. world"))
+                .andExpect(jsonPath("$[4].parameters", empty()));
     }
 
     // Parameter types are written as their lowercase JSON value
     @Test
     void parameterTypesUseJsonValue() throws Exception {
         mockMvc.perform(get(TRANSFORMATIONS_URL))
-                .andExpect(jsonPath("$[0].parameters[0].type").value("text"))
-                .andExpect(jsonPath("$[3].parameters[0].type").value("number"))
-                .andExpect(jsonPath("$[4].parameters[0].type").value("regex"))
-                .andExpect(jsonPath("$[4].parameters[1].type").value("boolean"));
+                .andExpect(jsonPath("$[12].parameters[0].type").value("text"))
+                .andExpect(jsonPath("$[16].parameters[0].type").value("number"))
+                .andExpect(jsonPath("$[9].parameters[0].type").value("regex"))
+                .andExpect(jsonPath("$[9].parameters[1].type").value("boolean"));
     }
 
     // Runs the steps in order and returns the original text, final result and history

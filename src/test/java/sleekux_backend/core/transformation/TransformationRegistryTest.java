@@ -33,14 +33,14 @@ public class TransformationRegistryTest {
         registry = new TransformationRegistry();
     }
 
-    // Default registry contains all built-in transformations in order
+    // Default registry contains all built-in transformations in alphabetical order
     @Test
     void defaultRegistryContainsBuiltIns() {
         List<String> keys = registry.getAllAsList().stream().map(Transformation::getKey).toList();
 
-        assertEquals(List.of("replace", "append", "prepend", "substring", "regex_match", "uppercase", "lowercase", "trim",
-                "regex_replace", "case_convert", "reverse", "pad", "repeat", "normalize_whitespace",
-                "sort_lines", "dedupe_lines", "filter_lines", "number_lines", "split_join", "wrap_lines"), keys);
+        assertEquals(List.of("append", "case_convert", "dedupe_lines", "filter_lines", "lowercase",
+                "normalize_whitespace", "number_lines", "pad", "prepend", "regex_match", "regex_replace", "repeat",
+                "replace", "reverse", "sort_lines", "split_join", "substring", "trim", "uppercase", "wrap_lines"), keys);
     }
 
     // get returns the transformation registered under the key
