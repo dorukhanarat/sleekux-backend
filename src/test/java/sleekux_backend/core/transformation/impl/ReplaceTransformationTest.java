@@ -27,6 +27,12 @@ public class ReplaceTransformationTest {
         return params;
     }
 
+    private Map<String, Object> params(Object oldValue, Object newValue, Object caseInsensitive) {
+        Map<String, Object> params = params(oldValue, newValue);
+        params.put("caseInsensitive", caseInsensitive);
+        return params;
+    }
+
     // Has key "replace" and display name "Replace Text"
     @Test
     void hasExpectedKeyAndDisplayName() {
@@ -34,12 +40,18 @@ public class ReplaceTransformationTest {
         assertEquals("Replace Text", replaceTransformation.getDisplayName());
     }
 
-    // Defines a required oldValue and an optional newValue text parameter
+    // Defines a required oldValue, an optional newValue and an optional caseInsensitive flag
     @Test
     void definesOldValueAndNewValueParameters() {
         List<ParameterDefinition> parameters = replaceTransformation.getParameters();
 
-        assertEquals(2, parameters.size());
+        assertEquals(3, parameters.size());
+
+        ParameterDefinition caseInsensitive = parameters.get(2);
+        assertEquals("caseInsensitive", caseInsensitive.getName());
+        assertEquals(ParameterType.BOOLEAN, caseInsensitive.getType());
+        assertFalse(caseInsensitive.isRequired());
+        assertEquals(false, caseInsensitive.getDefaultValue());
 
         ParameterDefinition oldValue = parameters.get(0);
         assertEquals("oldValue", oldValue.getName());
@@ -149,5 +161,33 @@ public class ReplaceTransformationTest {
     @Test
     void replacesNonOverlappingMatchesFromLeft() {
         assertEquals("ba", replaceTransformation.apply("aaa", params("aa", "b")));
+    }
+
+    // With caseInsensitive, matches regardless of upper and lower case
+    @Test
+    void caseInsensitiveMatchesAnyCase() {
+        assertEquals("bye bye bye", replaceTransformation.apply("Hello hello HELLO", params("hello", "bye", true)));
+    }
+
+    // With caseInsensitive, also matches non-ASCII letters in any case
+    @Test
+    void caseInsensitiveHandlesNonAscii() {
+        assertEquals("tea tea", replaceTransformation.apply("Çay ÇAY", params("çay", "tea", true)));
+        assertEquals("x x", replaceTransformation.apply("Ölçü ÖLÇÜ", params("ölçü", "x", true)));
+    }
+
+    // With caseInsensitive, regex characters in both values are still treated literally
+    @Test
+    void caseInsensitiveIsStillLiteral() {
+        assertEquals("$1 costs $1", replaceTransformation.apply("A.B costs a.b", params("a.b", "$1", true)));
+        assertEquals("a\\b", replaceTransformation.apply("aXb", params("x", "\\", true)));
+    }
+
+    // Matching is case-sensitive when caseInsensitive is false, missing or not a valid boolean
+    @Test
+    void caseSensitiveByDefault() {
+        assertEquals("Hello bye", replaceTransformation.apply("Hello hello", params("hello", "bye", false)));
+        assertEquals("Hello bye", replaceTransformation.apply("Hello hello", params("hello", "bye")));
+        assertEquals("Hello bye", replaceTransformation.apply("Hello hello", params("hello", "bye", "maybe")));
     }
 }

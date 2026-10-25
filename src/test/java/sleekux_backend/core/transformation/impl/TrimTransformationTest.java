@@ -26,6 +26,12 @@ public class TrimTransformationTest {
         return params;
     }
 
+    private Map<String, Object> chars(Object mode, Object chars) {
+        Map<String, Object> params = mode(mode);
+        params.put("chars", chars);
+        return params;
+    }
+
     // Has key "trim" and display name "Trim Whitespace"
     @Test
     void hasExpectedKeyAndDisplayName() {
@@ -33,16 +39,20 @@ public class TrimTransformationTest {
         assertEquals("Trim Whitespace", trimTransformation.getDisplayName());
     }
 
-    // Defines an optional mode parameter that defaults to "both"
+    // Defines an optional mode parameter that defaults to "both" and an optional chars parameter that defaults to ""
     @Test
     void definesModeParameter() {
         List<ParameterDefinition> parameters = trimTransformation.getParameters();
 
-        assertEquals(1, parameters.size());
+        assertEquals(2, parameters.size());
         assertEquals("mode", parameters.get(0).getName());
         assertEquals(ParameterType.TEXT, parameters.get(0).getType());
         assertFalse(parameters.get(0).isRequired());
         assertEquals("both", parameters.get(0).getDefaultValue());
+        assertEquals("chars", parameters.get(1).getName());
+        assertEquals(ParameterType.TEXT, parameters.get(1).getType());
+        assertFalse(parameters.get(1).isRequired());
+        assertEquals("", parameters.get(1).getDefaultValue());
     }
 
     // Mode "both" trims whitespace from both ends
@@ -121,5 +131,46 @@ public class TrimTransformationTest {
     @Test
     void returnsEmptyStringForNullInput() {
         assertEquals("", trimTransformation.apply(null, mode("both")));
+    }
+
+    // Trims any of the given characters instead of whitespace
+    @Test
+    void trimsGivenChars() {
+        assertEquals("path/to/file", trimTransformation.apply("//path/to/file/", chars("both", "/")));
+        assertEquals("quoted", trimTransformation.apply("\"'quoted'\"", chars("both", "\"'")));
+    }
+
+    // Trims the given characters only at the chosen end
+    @Test
+    void trimsGivenCharsAtOneEnd() {
+        assertEquals("path/", trimTransformation.apply("//path/", chars("start", "/")));
+        assertEquals("//path", trimTransformation.apply("//path/", chars("end", "/")));
+    }
+
+    // When chars are given, whitespace is kept unless it is in the list
+    @Test
+    void keepsWhitespaceWhenNotListed() {
+        assertEquals(" a ", trimTransformation.apply("- a -", chars("both", "-")));
+        assertEquals("a", trimTransformation.apply("- a -", chars("both", "- ")));
+    }
+
+    // Trims emoji given as chars
+    @Test
+    void trimsEmoji() {
+        assertEquals("hi", trimTransformation.apply("😀😀hi😀", chars("both", "😀")));
+    }
+
+    // Returns an empty string when every character is trimmed
+    @Test
+    void trimsEverything() {
+        assertEquals("", trimTransformation.apply("////", chars("both", "/")));
+        assertEquals("", trimTransformation.apply("////", chars("end", "/")));
+    }
+
+    // Trims whitespace when chars is empty or null
+    @Test
+    void emptyCharsTrimsWhitespace() {
+        assertEquals("a", trimTransformation.apply("  a  ", chars("both", "")));
+        assertEquals("a", trimTransformation.apply("  a  ", chars("both", null)));
     }
 }

@@ -100,10 +100,19 @@ public class SubstringTransformationTest {
         assertEquals("llo", substringTransformation.apply("Hello", range(2, 100)));
     }
 
-    // Treats a negative startIndex as 0
+    // A negative startIndex counts from the end of the text
+    @Test
+    void negativeStartCountsFromEnd() {
+        assertEquals("llo", substringTransformation.apply("Hello", range(-3, -1)));
+        assertEquals("o", substringTransformation.apply("Hello", range(-1, -1)));
+        assertEquals("ll", substringTransformation.apply("Hello", range(-3, 4)));
+    }
+
+    // A negative startIndex further back than the start of the text starts at 0
     @Test
     void clampsNegativeStartIndex() {
         assertEquals("Hel", substringTransformation.apply("Hello", range(-5, 3)));
+        assertEquals("Hello", substringTransformation.apply("Hello", range(-100, -1)));
     }
 
     // Returns an empty string when startIndex is at or past the end of the text

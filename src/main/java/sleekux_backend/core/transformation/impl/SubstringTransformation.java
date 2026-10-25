@@ -20,7 +20,7 @@ public class SubstringTransformation extends AbstractTransformation {
                                 ParameterType.NUMBER,
                                 true,
                                 0,
-                                "Index of the first character to keep, 0 is the start"
+                                "Index of the first character to keep, 0 is the start, -3 keeps the last 3"
                         ),
                         new ParameterDefinition(
                                 "endIndex",
@@ -44,8 +44,9 @@ public class SubstringTransformation extends AbstractTransformation {
         int startIndex = getIntParam(parameters, "startIndex", 0);
         int endIndex = getIntParam(parameters, "endIndex", -1);
 
+        // A negative start counts from the end, so -3 keeps the last 3 characters
         if(startIndex < 0) {
-            startIndex = 0;
+            startIndex = Math.max(0, length + startIndex);
         }
 
         if(startIndex > length) {

@@ -6,6 +6,8 @@ import sleekux_backend.core.transformation.AbstractTransformation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ReplaceTransformation extends AbstractTransformation {
 
@@ -29,6 +31,14 @@ public class ReplaceTransformation extends AbstractTransformation {
                                 false,
                                 "",
                                 "Text to put in its place, leave empty to delete"
+                        ),
+                        new ParameterDefinition(
+                                "caseInsensitive",
+                                "Ignore Case",
+                                ParameterType.BOOLEAN,
+                                false,
+                                false,
+                                "Also match World and WORLD when searching for world"
                         )
                 )
         );
@@ -42,11 +52,19 @@ public class ReplaceTransformation extends AbstractTransformation {
 
         String oldValue = getStringParam(parameters, "oldValue", "");
         String newValue = getStringParam(parameters, "newValue", "");
+        boolean caseInsensitive = getBooleanParam(parameters, "caseInsensitive", false);
 
         if(oldValue.isEmpty()) {
             return input;
         }
 
-        return input.replace(oldValue, newValue);
+        if(!caseInsensitive) {
+            return input.replace(oldValue, newValue);
+        }
+
+        // Both values are quoted, so regex characters in them are still treated literally
+        return Pattern.compile(Pattern.quote(oldValue), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE)
+                .matcher(input)
+                .replaceAll(Matcher.quoteReplacement(newValue));
     }
 }

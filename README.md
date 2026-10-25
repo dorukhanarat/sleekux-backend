@@ -148,7 +148,7 @@ Errors return a JSON body in this format:
 
 | Status | When |
 |---|---|
-| `400 Bad Request` | Unknown or blank `transformationKey`, a `null` step, an invalid regex pattern, or a body that is missing or not valid JSON |
+| `400 Bad Request` | Unknown or blank `transformationKey`, a `null` step, an invalid regex pattern, input a transformation cannot read (invalid JSON for `json_format`, invalid Base64, percent-encoding or JSON escapes when decoding, or an invalid JWT), or a body that is missing or not valid JSON |
 | `404 Not Found` | The URL does not exist |
 | `405 Method Not Allowed` | Wrong HTTP method, e.g. `GET /api/transform` |
 | `415 Unsupported Media Type` | The body is not sent as `application/json` |
@@ -158,14 +158,14 @@ Errors return a JSON body in this format:
 
 | Key | Name | Parameters | Notes |
 |---|---|---|---|
-| `replace` | Replace Text | `oldValue` (text, required), `newValue` (text, default `""`) | Replaces every occurrence. Case-sensitive, and special characters are matched literally (not as regex). An empty `newValue` removes the matches. An empty `oldValue` leaves the text unchanged. |
+| `replace` | Replace Text | `oldValue` (text, required), `newValue` (text, default `""`), `caseInsensitive` (boolean, default `false`) | Replaces every occurrence. Special characters are matched literally (not as regex). Case-sensitive unless `caseInsensitive` is `true`. An empty `newValue` removes the matches. An empty `oldValue` leaves the text unchanged. |
 | `append` | Append Text | `suffix` (text, required) | Adds the suffix to the end. |
 | `prepend` | Prepend Text | `prefix` (text, required) | Adds the prefix to the start. |
-| `substring` | Substring | `startIndex` (number, default `0`), `endIndex` (number, default `-1`) | Start is inclusive, end is exclusive, and indexes start at 0. `-1` means the end of the text. Out-of-range indexes are clamped to the text length. Returns `""` if start is not before end. |
+| `substring` | Substring | `startIndex` (number, default `0`), `endIndex` (number, default `-1`) | Start is inclusive, end is exclusive, and indexes start at 0. A negative `startIndex` counts from the end, so `-3` keeps the last 3 characters. An `endIndex` of `-1` means the end of the text. Out-of-range indexes are clamped to the text length. Returns `""` if start is not before end. |
 | `regex_match` | Regex Match | `pattern` (regex, required), `matchAll` (boolean, default `true`), `delimiter` (text, default `", "`) | Returns the matches joined by the delimiter, or only the first match if `matchAll` is `false`. Returns `""` if nothing matches. An invalid pattern returns `400`. |
 | `uppercase` | To Uppercase | – | |
 | `lowercase` | To Lowercase | – | |
-| `trim` | Trim Whitespace | `mode` (text, default `both`) | `start`, `end` or `both` (ignores upper/lower case). Unknown values trim both ends. |
+| `trim` | Trim Whitespace | `mode` (text, default `both`), `chars` (text, default `""`) | `start`, `end` or `both` (ignores upper/lower case). Unknown values trim both ends. If `chars` is set, any of those characters are trimmed instead of whitespace, e.g. `/"` trims slashes and quotes. |
 | `regex_replace` | Regex Replace | `pattern` (regex, required), `replacement` (text, default `""`), `caseInsensitive` (boolean, default `false`) | Replaces every match. Use `$1`, `$2`, … in the replacement to insert groups. An empty `pattern` leaves the text unchanged. An invalid pattern or a reference to a missing group returns `400`. |
 | `case_convert` | Change Case | `style` (text, default `title`) | `title`, `sentence`, `camel`, `pascal`, `snake`, `kebab` or `constant`. Words are split on spaces, `_`, `-` and camelCase humps (`parseHTMLText` → `parse_html_text`). `title` and `sentence` keep the original spacing. Unknown values use `title`. |
 | `reverse` | Reverse Text | `mode` (text, default `chars`) | `chars`, `words` or `lines`. Emoji stay intact. `words` joins the words with single spaces. Unknown values reverse characters. |
@@ -178,8 +178,29 @@ Errors return a JSON body in this format:
 | `number_lines` | Number Lines | `start` (number, default `1`), `separator` (text, default `". "`) | Every line is numbered, including empty ones. |
 | `split_join` | Split & Join | `splitBy` (text, default `","`), `joinWith` (text, default newline), `trimItems` (boolean, default `true`) | Splits on `splitBy` (matched literally) and joins the items with `joinWith`, e.g. turns `a, b, c` into one item per line. Empty items are kept. An empty `splitBy` leaves the text unchanged. |
 | `wrap_lines` | Wrap Each Line | `prefix` (text, default `""`), `suffix` (text, default `""`) | Adds the prefix and suffix to every line, e.g. `'` and `',` to quote values. |
+| `slugify` | Slugify | `separator` (text, default `-`), `lowercase` (boolean, default `true`) | Turns text into a URL-friendly slug, e.g. `Çok Güzel Bir Başlık!` → `cok-guzel-bir-baslik`. Accented letters are converted, everything else that is not `A–Z`/`0–9` becomes one separator, and separators are trimmed from the ends. |
+| `remove_diacritics` | Remove Accents | – | `Çağrı Şükrü` → `Cagri Sukru`. Also handles letters without a separate accent (`ı`, `ł`, `ø`, `ß` → `ss`, `æ` → `ae`, …). Non-Latin scripts such as Korean or Hindi are left unchanged. |
+| `base64` | Base64 Encode/Decode | `mode` (text, default `encode`), `urlSafe` (boolean, default `false`) | `encode` or `decode`, using UTF-8. Decoding ignores spaces and line breaks and does not need `=` padding. `urlSafe` uses `-` and `_` instead of `+` and `/`. Invalid Base64, or data that is not UTF-8 text, returns `400`. |
+| `url_encode` | URL Encode/Decode | `mode` (text, default `encode`) | `encode` or `decode`. Encodes everything except `A–Z a–z 0–9 - _ . ~`, with spaces as `%20`. Decoding also reads `+` as a space. An invalid `%` code returns `400`. |
+| `html_escape` | Escape HTML | `mode` (text, default `escape`) | `escape` replaces `& < > " '` with entities. `unescape` turns `&amp; &lt; &gt; &quot; &apos; &nbsp;` and numeric entities like `&#39;` or `&#x1F600;` back into characters, in a single pass. Unknown entities are left unchanged. |
+| `json_format` | Format JSON | `mode` (text, default `pretty`), `indent` (number, default `2`) | `pretty` puts each value on its own line with `indent` spaces (1–8), `minify` removes all whitespace between values. Key order and number precision are kept. Invalid JSON returns `400` with the line and column. |
+| `truncate` | Truncate Text | `length` (number, required), `ellipsis` (text, default `…`), `wordBoundary` (boolean, default `true`) | Shortens text to at most `length` characters, including the ellipsis. With `wordBoundary` the cut is made at the last space instead of inside a word. Text that already fits is returned unchanged. |
+| `extract` | Extract | `type` (text, default `emails`), `unique` (boolean, default `false`) | `emails`, `urls`, `numbers` or `hashtags`, one per line. Punctuation at the end of a URL is dropped. A dash between numbers (`2024-10-25`) is not read as a minus sign. `unique` keeps only the first of each repeated value. |
+| `take_lines` | Take Lines | `count` (number, required, default `10`), `from` (text, default `start`) | Keeps the first (`start`) or last (`end`) `count` lines. A count of `0` or less returns `""`. |
+| `word_wrap` | Word Wrap | `width` (number, default `80`) | Puts as many whole words on each line as fit within `width` (1–10000). Words longer than `width` get their own line and are not split. Existing line breaks are kept; repeated spaces and indentation are collapsed. |
+| `count` | Count | `what` (text, default `all`) | `chars`, `words`, `lines` or `all` (`chars: 11` / `words: 2` / `lines: 1`). Emoji count as one character, and a line break at the very end does not start a new line. Replaces the text with the count, so it is usually the last step. |
+| `hash` | Hash | `algorithm` (text, default `sha256`) | `md5`, `sha1`, `sha256` or `sha512` of the UTF-8 text, in lowercase hex. `SHA-256` style names also work. |
+| `mask` | Mask Text | `visibleStart` (number, default `0`), `visibleEnd` (number, default `4`), `maskChar` (text, default `*`) | Masks letters and digits, e.g. `4111 1111 1111 1111` → `**** **** **** 1111`. Spaces, dashes, `@` and other characters stay, so the shape remains readable. Text with too few letters and digits to mask is left unchanged. |
+| `unicode_normalize` | Normalize Unicode | `form` (text, default `NFC`) | `NFC`, `NFD`, `NFKC` or `NFKD`. Useful when text that looks the same does not match. `NFKC` also turns `ﬁ` into `fi` and `①` into `1`. |
+| `swap_case` | Swap Case | – | `Hello` → `hELLO`. Does not depend on the server's language setting. |
+| `shuffle_lines` | Shuffle Lines | `seed` (number, optional) | Puts the lines in random order. The same `seed` always gives the same order; without one the order changes every time. |
+| `strip_html` | Strip HTML | `decodeEntities` (boolean, default `true`) | Removes tags like a browser would show the text: `<head>`, scripts, styles and comments are dropped, paragraphs are separated by a blank line, and `<br>` and list items start a new line. Text such as `5 < 6` is kept. |
+| `remove_chars` | Remove Characters | `types` (text, default `punctuation`) | One or more of `digits`, `letters`, `punctuation`, `symbols`, `whitespace`, `non_ascii` and `emoji`, separated by commas. `punctuation` includes `&`, `-` and quotes but not `$ + =`, which are `symbols`. `emoji` also removes `©` and `®`. |
+| `json_escape` | Escape JSON String | `mode` (text, default `escape`) | `escape` prepares text to paste between the quotes of a JSON or Java string (`"` → `\"`, line break → `\n`). `unescape` turns it back, including `\uXXXX` codes. An invalid escape returns `400`. |
+| `jwt_decode` | Decode JWT | `part` (text, default `both`) | Shows the `header`, the `payload` or `both` as formatted JSON. A `Bearer ` prefix is ignored. **The signature is not checked**, so this is for reading tokens, not for trusting them. An invalid token returns `400`. |
+| `csv_column` | CSV Column | `column` (number, required, default `1`), `delimiter` (text, default `,`), `skipHeader` (boolean, default `false`) | Returns one column of CSV data, one value per line. `1` is the first column and `-1` the last. Quoted fields may contain the delimiter, line breaks and `""` for a quote. Use `tab` as the delimiter for tab-separated data. Rows without the column give an empty line. |
 
-Line-based transformations (`reverse` with `lines`, `normalize_whitespace` with `blank_lines`, `sort_lines`, `dedupe_lines`, `filter_lines`, `number_lines`, `wrap_lines`) accept `\n`, `\r\n` and `\r` line endings and always return `\n`.
+Line-based transformations (`reverse` with `lines`, `normalize_whitespace` with `blank_lines`, `sort_lines`, `dedupe_lines`, `filter_lines`, `number_lines`, `wrap_lines`, `take_lines`, `shuffle_lines`, `word_wrap`, `csv_column`) accept `\n`, `\r\n` and `\r` line endings and always return `\n`.
 
 Parameter values can be sent as JSON strings, numbers or booleans. For example, `"startIndex": 2` and `"startIndex": "2"` both work. A value that cannot be read (such as `"abc"` for a number) falls back to its default.
 

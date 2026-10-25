@@ -28,6 +28,11 @@ public class TransformationControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    // JSONPath that selects a transformation by key, so tests do not depend on its position in the list
+    private static String byKey(String key) {
+        return "$[?(@.key == '" + key + "')]";
+    }
+
     private ResultActions postTransform(String json) throws Exception {
         return mockMvc.perform(post(TRANSFORM_URL).contentType(MediaType.APPLICATION_JSON).content(json));
     }
@@ -37,33 +42,36 @@ public class TransformationControllerTest {
     void listsAllTransformations() throws Exception {
         mockMvc.perform(get(TRANSFORMATIONS_URL))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(20)))
-                .andExpect(jsonPath("$[*].key", contains("append", "case_convert", "dedupe_lines", "filter_lines", "lowercase",
-                        "normalize_whitespace", "number_lines", "pad", "prepend", "regex_match", "regex_replace", "repeat",
-                        "replace", "reverse", "sort_lines", "split_join", "substring", "trim", "uppercase", "wrap_lines")));
+                .andExpect(jsonPath("$", hasSize(41)))
+                .andExpect(jsonPath("$[*].key", contains("append", "base64", "case_convert", "count", "csv_column", "dedupe_lines", "extract",
+                        "filter_lines", "hash", "html_escape", "json_escape", "json_format", "jwt_decode", "lowercase",
+                        "mask", "normalize_whitespace", "number_lines", "pad", "prepend", "regex_match", "regex_replace",
+                        "remove_chars", "remove_diacritics", "repeat", "replace", "reverse", "shuffle_lines", "slugify",
+                        "sort_lines", "split_join", "strip_html", "substring", "swap_case", "take_lines", "trim",
+                        "truncate", "unicode_normalize", "uppercase", "url_encode", "word_wrap", "wrap_lines")));
     }
 
     // Each transformation includes its display name and parameter definitions
     @Test
     void transformationsIncludeParameterDefinitions() throws Exception {
         mockMvc.perform(get(TRANSFORMATIONS_URL))
-                .andExpect(jsonPath("$[12].displayName").value("Replace Text"))
-                .andExpect(jsonPath("$[12].parameters", hasSize(2)))
-                .andExpect(jsonPath("$[12].parameters[0].name").value("oldValue"))
-                .andExpect(jsonPath("$[12].parameters[0].label").value("Target String"))
-                .andExpect(jsonPath("$[12].parameters[0].required").value(true))
-                .andExpect(jsonPath("$[12].parameters[0].placeholder").value("Exact text to find, e.g. world"))
-                .andExpect(jsonPath("$[4].parameters", empty()));
+                .andExpect(jsonPath(byKey("replace") + ".displayName", contains("Replace Text")))
+                .andExpect(jsonPath(byKey("replace") + ".parameters[*]", hasSize(3)))
+                .andExpect(jsonPath(byKey("replace") + ".parameters[0].name", contains("oldValue")))
+                .andExpect(jsonPath(byKey("replace") + ".parameters[0].label", contains("Target String")))
+                .andExpect(jsonPath(byKey("replace") + ".parameters[0].required", contains(true)))
+                .andExpect(jsonPath(byKey("replace") + ".parameters[0].placeholder", contains("Exact text to find, e.g. world")))
+                .andExpect(jsonPath(byKey("lowercase") + ".parameters[*]", empty()));
     }
 
     // Parameter types are written as their lowercase JSON value
     @Test
     void parameterTypesUseJsonValue() throws Exception {
         mockMvc.perform(get(TRANSFORMATIONS_URL))
-                .andExpect(jsonPath("$[12].parameters[0].type").value("text"))
-                .andExpect(jsonPath("$[16].parameters[0].type").value("number"))
-                .andExpect(jsonPath("$[9].parameters[0].type").value("regex"))
-                .andExpect(jsonPath("$[9].parameters[1].type").value("boolean"));
+                .andExpect(jsonPath(byKey("replace") + ".parameters[0].type", contains("text")))
+                .andExpect(jsonPath(byKey("substring") + ".parameters[0].type", contains("number")))
+                .andExpect(jsonPath(byKey("regex_match") + ".parameters[0].type", contains("regex")))
+                .andExpect(jsonPath(byKey("regex_match") + ".parameters[1].type", contains("boolean")));
     }
 
     // Runs the steps in order and returns the original text, final result and history
@@ -281,5 +289,81 @@ public class TransformationControllerTest {
                         .header("Access-Control-Request-Method", "POST"))
                 .andExpect(status().isForbidden())
                 .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
+    }
+
+    // New transformations can be chained like the others
+    @Test
+    void chainsNewTransformations() throws Exception {
+        postTransform("""
+                {
+                  "text": "Çok Güzel Bir Başlık!",
+                  "steps": [
+                    { "transformationKey": "slugify" },
+                    { "transformationKey": "base64", "parameters": { "mode": "encode" } },
+                    { "transformationKey": "base64", "parameters": { "mode": "decode" } },
+                    { "transformationKey": "truncate", "parameters": { "length": 8, "ellipsis": "", "wordBoundary": false } }
+                  ]
+                }
+                """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.finalResult").value("cok-guze"))
+                .andExpect(jsonPath("$.history[0].outputSnapshot").value("cok-guzel-bir-baslik"));
+    }
+
+    // Invalid input for json_format, base64 and url_encode returns 400 with an explanation
+    @Test
+    void invalidInputForNewTransformationsReturnsBadRequest() throws Exception {
+        postTransform("""
+                { "text": "{\\"a\\": }", "steps": [ { "transformationKey": "json_format" } ] }
+                """)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(startsWith("Invalid JSON: ")));
+
+        postTransform("""
+                { "text": "not base64!", "steps": [ { "transformationKey": "base64", "parameters": { "mode": "decode" } } ] }
+                """)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(startsWith("Invalid Base64 input")));
+
+        postTransform("""
+                { "text": "100%zz", "steps": [ { "transformationKey": "url_encode", "parameters": { "mode": "decode" } } ] }
+                """)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(startsWith("Invalid percent-encoding")));
+    }
+
+    // Invalid input for jwt_decode and json_escape returns 400 with an explanation
+    @Test
+    void invalidInputForDecodersReturnsBadRequest() throws Exception {
+        postTransform("""
+                { "text": "not-a-token", "steps": [ { "transformationKey": "jwt_decode" } ] }
+                """)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid JWT: expected 3 parts separated by dots, found 1"));
+
+        postTransform("""
+                { "text": "bad \\\\x escape", "steps": [ { "transformationKey": "json_escape", "parameters": { "mode": "unescape" } } ] }
+                """)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(startsWith("Invalid escape sequence")));
+    }
+
+    // Text copied from a web page can be cleaned up and summarised in one pipeline
+    @Test
+    void chainsCleanupTransformations() throws Exception {
+        postTransform("""
+                {
+                  "text": "<p>Hello <b>World</b> &amp; friends!</p><p>Second   paragraph</p>",
+                  "steps": [
+                    { "transformationKey": "strip_html" },
+                    { "transformationKey": "remove_chars", "parameters": { "types": "punctuation" } },
+                    { "transformationKey": "count", "parameters": { "what": "words" } }
+                  ]
+                }
+                """)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.history[0].outputSnapshot").value("Hello World & friends!\n\nSecond paragraph"))
+                .andExpect(jsonPath("$.history[1].outputSnapshot").value("Hello World  friends\n\nSecond paragraph"))
+                .andExpect(jsonPath("$.finalResult").value("5"));
     }
 }

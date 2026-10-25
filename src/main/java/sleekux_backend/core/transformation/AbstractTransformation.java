@@ -2,6 +2,8 @@ package sleekux_backend.core.transformation;
 
 import sleekux_backend.core.model.ParameterDefinition;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -63,4 +65,12 @@ public abstract class AbstractTransformation implements Transformation {
         return defaultValue;
     }
 
+    // Splits text into lines on \n, \r\n or \r. A line break at the very end does not add an extra empty line
+    protected static List<String> splitLines(String input) {
+        List<String> lines = new ArrayList<>(Arrays.asList(input.split("\\R", -1)));
+        if(lines.size() > 1 && lines.get(lines.size() - 1).isEmpty()) {
+            lines.remove(lines.size() - 1);
+        }
+        return lines;
+    }
 }
